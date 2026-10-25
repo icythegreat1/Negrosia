@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Product | Negrosia</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">
+            NEGROSIA
+        </div>
+
+        <div class="nav-links">
+
+            <a href="seller.html">
+                Dashboard
+            </a>
+
+            <a href="add-product.html">
+                Add Product
+            </a>
+
+            <a href="seller-products.html">
+                My Products
+            </a>
+
+            <a href="seller-orders.html">
+                Orders
+            </a>
+
+        </div>
+
+        <div class="nav-actions">
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- EDIT PRODUCT -->
+    <section class="register-section">
+
+        <div class="register-box">
+
+            <h1>
+                Edit Product
+            </h1>
+
+            <p>
+                Update your product information.
+            </p>
+
+
+            <form id="editProductForm">
+
+
+                <!-- PRODUCT NAME -->
+                <label for="productName">
+                    Product Name
+                </label>
+
+                <input
+                    type="text"
+                    id="productName"
+                    required
+                >
+
+
+                <!-- CATEGORY -->
+                <label for="category">
+                    Category
+                </label>
+
+                <select
+                    id="category"
+                    required
+                >
+
+                    <option value="">
+                        Select Category
+                    </option>
+
+                    <option value="Woven Crafts">
+                        Woven Crafts
+                    </option>
+
+                    <option value="Jewelry & Accessories">
+                        Jewelry & Accessories
+                    </option>
+
+                    <option value="Home Decor">
+                        Home Decor
+                    </option>
+
+                    <option value="Bags & Pouches">
+                        Bags & Pouches
+                    </option>
+
+                    <option value="Handmade Gifts">
+                        Handmade Gifts
+                    </option>
+
+                    <option value="Souvenirs">
+                        Souvenirs
+                    </option>
+
+                </select>
+
+
+                <!-- DESCRIPTION -->
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    rows="5"
+                    placeholder="Enter product description"
+                ></textarea>
+
+
+                <!-- PRICE -->
+                <label for="price">
+                    Price
+                </label>
+
+                <input
+                    type="number"
+                    id="price"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+
+
+                <!-- UPDATE BUTTON -->
+                <button
+                    type="submit"
+                    id="updateButton"
+                >
+                    Update Product
+                </button>
+
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <script>
+
+        // Get the product ID from the URL
+        const parameters =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const productId =
+            parameters.get("id");
+
+
+        // Load the current product information
+        async function loadProduct() {
+
+            // Make sure there is a product ID
+            if (!productId) {
+
+                alert(
+                    "Product ID is missing."
+                );
+
+                window.location.href =
+                    "seller-products.html";
+
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/seller-products/${productId}`
+                    );
+
+                const product =
+                    await response.json();
+
+
+                // User is not logged in
+                if (response.status === 401) {
+
+                    alert(
+                        "Please login first."
+                    );
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+                }
+
+
+                // User is not a seller
+                if (response.status === 403) {
+
+                    alert(
+                        "Seller access only."
+                    );
+
+                    window.location.href =
+                        "index.html";
+
+                    return;
+                }
+
+
+                // Product was not found
+                if (!response.ok) {
+
+                    alert(
+                        product.message
+                    );
+
+                    window.location.href =
+                        "seller-products.html";
+
+                    return;
+                }
+
+
+                // Put current product information
+                // inside the form
+
+                document.getElementById(
+                    "productName"
+                ).value =
+                    product.product_name;
+
+
+                document.getElementById(
+                    "category"
+                ).value =
+                    product.category;
+
+
+                document.getElementById(
+                    "description"
+                ).value =
+                    product.description || "";
+
+
+                document.getElementById(
+                    "price"
+                ).value =
+                    product.price;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Load product error:",
+                    error
+                );
+
+                alert(
+                    "Unable to load product."
+                );
+
+            }
+
+        }
+
+
+        // Update the product
+        document.getElementById(
+            "editProductForm"
+        ).addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+
+                const productName =
+                    document.getElementById(
+                        "productName"
+                    ).value;
+
+
+                const category =
+                    document.getElementById(
+                        "category"
+                    ).value;
+
+
+                const description =
+                    document.getElementById(
+                        "description"
+                    ).value;
+
+
+                const price =
+                    document.getElementById(
+                        "price"
+                    ).value;
+
+
+                const button =
+                    document.getElementById(
+                        "updateButton"
+                    );
+
+
+                try {
+
+                    button.disabled = true;
+
+                    button.textContent =
+                        "Updating...";
+
+
+                    const response =
+                        await fetch(
+                            `/api/seller-products/${productId}`,
+                            {
+                                method: "PUT",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+                                    productName:
+                                        productName,
+
+                                    category:
+                                        category,
+
+                                    description:
+                                        description,
+
+                                    price:
+                                        price
+                                })
+                            }
+                        );
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        alert(
+                            result.message
+                        );
+
+                        button.disabled = false;
+
+                        button.textContent =
+                            "Update Product";
+
+                        return;
+                    }
+
+
+                    alert(
+                        "Product updated successfully!"
+                    );
+
+
+                    // Return to My Products
+                    window.location.href =
+                        "seller-products.html";
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Update product error:",
+                        error
+                    );
+
+
+                    alert(
+                        "Something went wrong while updating the product."
+                    );
+
+
+                    button.disabled = false;
+
+                    button.textContent =
+                        "Update Product";
+
+                }
+
+            }
+        );
+
+
+        // Load product when page opens
+        loadProduct();
+
+    </script>
+
+</body>
+
+</html>

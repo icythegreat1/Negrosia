@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Seller Orders | Negrosia</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            NEGROSIA
+        </div>
+
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="seller.html">
+                Dashboard
+            </a>
+
+            <a href="add-product.html">
+                Add Product
+            </a>
+
+            <a href="seller-orders.html">
+                Orders
+            </a>
+
+        </div>
+
+
+        <div class="nav-actions">
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- HEADER -->
+
+    <section class="shop-header">
+
+        <h1>
+            Customer Orders
+        </h1>
+
+        <p>
+            View orders containing your handmade products.
+        </p>
+
+    </section>
+
+
+
+    <!-- ORDERS -->
+
+    <section class="shop-products">
+
+        <div id="sellerOrdersContainer">
+
+            <p>
+                Loading orders...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <script>
+async function updateOrderStatus(orderId) {
+
+    const status =
+        document.getElementById(
+            `status-${orderId}`
+        ).value;
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/orders/${orderId}/status`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        status: status
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+            alert(result.message);
+            return;
+        }
+
+        alert(
+            "Order status updated successfully!"
+        );
+
+        loadSellerOrders();
+
+    } catch (error) {
+
+        console.error(
+            "Status update error:",
+            error
+        );
+
+        alert(
+            "Something went wrong while updating the order."
+        );
+
+    }
+
+}
+        async function loadSellerOrders() {
+
+            const container =
+                document.getElementById(
+                    "sellerOrdersContainer"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/seller-orders"
+                    );
+
+
+                const orders =
+                    await response.json();
+
+
+
+                // Not logged in
+                if (response.status === 401) {
+
+                    alert(
+                        "Please login first."
+                    );
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+
+                }
+
+
+
+                // Not a seller
+                if (response.status === 403) {
+
+                    alert(
+                        "Seller access only."
+                    );
+
+                    window.location.href =
+                        "index.html";
+
+                    return;
+
+                }
+
+
+
+                // Other server error
+                if (!response.ok) {
+
+                    container.innerHTML =
+                        `<p>${orders.message}</p>`;
+
+                    return;
+
+                }
+
+
+
+                // No orders
+                if (orders.length === 0) {
+
+                    container.innerHTML = `
+
+                        <div class="empty-products">
+
+                            <div class="empty-icon">
+                                📦
+                            </div>
+
+                            <h3>
+                                No customer orders yet
+                            </h3>
+
+                            <p>
+                                Orders for your products
+                                will appear here.
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+
+                container.innerHTML = "";
+
+
+
+                // Display orders
+                orders.forEach(order => {
+
+                    const date =
+                        new Date(
+                            order.created_at
+                        ).toLocaleString();
+
+
+                    const subtotal =
+                        Number(order.price) *
+                        order.quantity;
+
+
+                    container.innerHTML += `
+
+                        <div class="order-card">
+
+
+                            <h2>
+                                Order #${order.order_id}
+                            </h2>
+
+
+                           <p>
+    <strong>Status:</strong>
+    ${order.status}
+</p>
+
+<div class="order-status-control">
+
+    <label>
+        Update Status:
+    </label>
+
+    <select id="status-${order.order_id}">
+
+        <option
+            value="Pending"
+            ${order.status === "Pending" ? "selected" : ""}
+        >
+            Pending
+        </option>
+
+        <option
+            value="Processing"
+            ${order.status === "Processing" ? "selected" : ""}
+        >
+            Processing
+        </option>
+
+        <option
+            value="Shipped"
+            ${order.status === "Shipped" ? "selected" : ""}
+        >
+            Shipped
+        </option>
+
+        <option
+            value="Completed"
+            ${order.status === "Completed" ? "selected" : ""}
+        >
+            Completed
+        </option>
+
+    </select>
+
+    <button
+        onclick="updateOrderStatus(${order.order_id})"
+    >
+        Update
+    </button>
+
+</div>
+
+
+
+                            <hr>
+
+
+
+                            <div class="order-item">
+
+
+                                <div class="product-image">
+
+                                    ${
+                                        order.image_url
+
+                                        ? `<img
+                                            src="${order.image_url}"
+                                            alt="${order.product_name}"
+                                          >`
+
+                                        : "🧺"
+                                    }
+
+                                </div>
+
+
+
+                                <div class="product-info">
+
+                                    <h3>
+                                        ${order.product_name}
+                                    </h3>
+
+
+                                    <p>
+                                        Quantity:
+                                        ${order.quantity}
+                                    </p>
+
+
+                                    <p>
+                                        Price:
+                                        ₱${Number(
+                                            order.price
+                                        ).toFixed(2)}
+                                    </p>
+
+
+                                    <p>
+                                        Subtotal:
+                                        ₱${subtotal.toFixed(2)}
+                                    </p>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <hr>
+
+
+
+                            <h3>
+                                Customer Information
+                            </h3>
+
+
+                            <p>
+                                <strong>Name:</strong>
+                                ${order.customer_name}
+                            </p>
+
+
+                            <p>
+                                <strong>Phone:</strong>
+                                ${order.phone}
+                            </p>
+
+
+                            <p>
+                                <strong>
+                                    Delivery Address:
+                                </strong>
+
+                                ${order.delivery_address}
+                            </p>
+
+
+                            <p>
+                                <strong>Payment:</strong>
+                                ${order.payment_method}
+                            </p>
+
+
+                            <p>
+                                <strong>Date:</strong>
+                                ${date}
+                            </p>
+
+
+                        </div>
+
+                    `;
+
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Seller orders error:",
+                    error
+                );
+
+
+                container.innerHTML = `
+
+                    <p>
+                        Something went wrong while
+                        loading customer orders.
+                    </p>
+
+                `;
+
+            }
+
+        }
+
+
+
+        loadSellerOrders();
+
+    </script>
+
+
+</body>
+
+</html>

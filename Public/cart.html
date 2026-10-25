@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cart | Negrosia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">NEGROSIA</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="index.html#categories">Categories</a>
+            <a href="index.html#about">About</a>
+        </div>
+
+        <div class="nav-actions">
+            <a href="cart.html" class="cart">🛒</a>
+        </div>
+
+    </nav>
+
+
+    <!-- CART HEADER -->
+    <section class="shop-header">
+
+        <h1>My Cart</h1>
+
+        <p>
+            Review the handmade crafts you added to your cart.
+        </p>
+
+    </section>
+
+
+    <!-- CART PRODUCTS -->
+    <section class="shop-products">
+
+        <div id="cartContainer"></div>
+
+
+        <!-- CART SUMMARY -->
+        <div class="cart-summary">
+
+            <h2>
+                Total:
+                ₱<span id="cartTotal">0.00</span>
+            </h2>
+
+            <button onclick="goToCheckout()">
+                Checkout
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <script>
+
+        // =========================
+        // LOAD CART
+        // =========================
+
+        function loadCart() {
+
+            const cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+            const container =
+                document.getElementById("cartContainer");
+
+            const totalElement =
+                document.getElementById("cartTotal");
+
+
+            // Check if cart is empty
+            if (cart.length === 0) {
+
+                container.innerHTML = `
+                    <div class="empty-products">
+
+                        <div class="empty-icon">
+                            🛒
+                        </div>
+
+                        <h3>
+                            Your cart is empty
+                        </h3>
+
+                        <p>
+                            Add some handmade crafts from the shop.
+                        </p>
+
+                        <a href="shop.html">
+                            Continue Shopping
+                        </a>
+
+                    </div>
+                `;
+
+                totalElement.textContent = "0.00";
+
+                return;
+            }
+
+
+            container.innerHTML = "";
+
+            let total = 0;
+
+
+            // Display every product
+            cart.forEach((product, index) => {
+
+                const subtotal =
+                    Number(product.price) *
+                    product.quantity;
+
+                total += subtotal;
+
+
+                container.innerHTML += `
+
+                    <div class="product-card">
+
+
+                        <!-- PRODUCT IMAGE -->
+
+                        <div class="product-image">
+
+                            ${
+                                product.image_url
+
+                                ? `<img
+                                    src="${product.image_url}"
+                                    alt="${product.product_name}"
+                                  >`
+
+                                : "🧺"
+                            }
+
+                        </div>
+
+
+                        <!-- PRODUCT INFORMATION -->
+
+                        <div class="product-info">
+
+                            <h3>
+                                ${product.product_name}
+                            </h3>
+
+
+                            <p>
+                                Seller:
+                                ${product.seller_name}
+                            </p>
+
+
+                            <p>
+                                Price:
+                                ₱${Number(product.price).toFixed(2)}
+                            </p>
+
+
+                            <!-- QUANTITY -->
+
+                            <div class="quantity-controls">
+
+                                <span>
+                                    Quantity:
+                                </span>
+
+                                <button
+                                    onclick="decreaseQuantity(${index})"
+                                >
+                                    −
+                                </button>
+
+                                <span>
+                                    ${product.quantity}
+                                </span>
+
+                                <button
+                                    onclick="increaseQuantity(${index})"
+                                >
+                                    +
+                                </button>
+
+                            </div>
+
+
+                            <!-- SUBTOTAL -->
+
+                            <p>
+
+                                Subtotal:
+
+                                ₱${subtotal.toFixed(2)}
+
+                            </p>
+
+
+                            <!-- REMOVE PRODUCT -->
+
+                            <button
+                                onclick="removeFromCart(${index})"
+                            >
+                                Remove
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            });
+
+
+            // Display total
+            totalElement.textContent =
+                total.toFixed(2);
+
+        }
+
+
+
+        // =========================
+        // REMOVE PRODUCT
+        // =========================
+
+        function removeFromCart(index) {
+
+            let cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+            cart.splice(index, 1);
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(cart)
+            );
+
+            loadCart();
+
+        }
+
+
+
+        // =========================
+        // INCREASE QUANTITY
+        // =========================
+
+        function increaseQuantity(index) {
+
+            let cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+            cart[index].quantity += 1;
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(cart)
+            );
+
+            loadCart();
+
+        }
+
+
+
+        // =========================
+        // DECREASE QUANTITY
+        // =========================
+
+        function decreaseQuantity(index) {
+
+            let cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+
+            if (cart[index].quantity > 1) {
+
+                cart[index].quantity -= 1;
+
+            } else {
+
+                cart.splice(index, 1);
+
+            }
+
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(cart)
+            );
+
+
+            loadCart();
+
+        }
+
+
+
+        // =========================
+        // GO TO CHECKOUT
+        // =========================
+
+        function goToCheckout() {
+
+            const cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+
+            // Do not checkout if cart is empty
+            if (cart.length === 0) {
+
+                alert("Your cart is empty.");
+
+                return;
+            }
+
+
+            // Open checkout page
+            window.location.href =
+                "checkout.html";
+
+        }
+
+
+
+        // =========================
+        // START CART
+        // =========================
+
+        loadCart();
+
+
+    </script>
+
+</body>
+
+</html>

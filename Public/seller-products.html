@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Products | Negrosia</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            NEGROSIA
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="seller.html">
+                Dashboard
+            </a>
+
+            <a href="add-product.html">
+                Add Product
+            </a>
+
+            <a href="seller-products.html">
+                My Products
+            </a>
+
+            <a href="seller-orders.html">
+                Orders
+            </a>
+
+        </div>
+
+        <div class="nav-actions">
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- HEADER -->
+
+    <section class="shop-header">
+
+        <h1>
+            My Products
+        </h1>
+
+        <p>
+            View the handmade products you added
+            to Negrosia.
+        </p>
+
+    </section>
+
+
+    <!-- PRODUCTS -->
+
+    <section class="shop-products">
+
+        <div
+            id="sellerProductsContainer"
+            class="products-grid"
+        >
+
+            <p>
+                Loading your products...
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <script>
+
+        async function loadSellerProducts() {
+
+            const container =
+                document.getElementById(
+                    "sellerProductsContainer"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/seller-products"
+                    );
+
+
+                const products =
+                    await response.json();
+
+
+                // Not logged in
+                if (response.status === 401) {
+
+                    alert(
+                        "Please login first."
+                    );
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+
+                }
+
+
+                // Not a seller
+                if (response.status === 403) {
+
+                    alert(
+                        "Seller access only."
+                    );
+
+                    window.location.href =
+                        "index.html";
+
+                    return;
+
+                }
+
+
+                // Other error
+                if (!response.ok) {
+
+                    container.innerHTML =
+                        `<p>${products.message}</p>`;
+
+                    return;
+
+                }
+
+
+                // No products
+                if (products.length === 0) {
+
+                    container.innerHTML = `
+
+                        <div class="empty-products">
+
+                            <div class="empty-icon">
+                                🧺
+                            </div>
+
+                            <h3>
+                                No products yet
+                            </h3>
+
+                            <p>
+                                Add your first handmade
+                                product to Negrosia.
+                            </p>
+
+                            <a href="add-product.html">
+                                Add Product
+                            </a>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                container.innerHTML = "";
+
+
+                // Display seller products
+                products.forEach(product => {
+
+                    container.innerHTML += `
+
+                        <div class="product-card">
+
+
+                            <div class="product-image">
+
+                                ${
+                                    product.image_url
+
+                                    ? `<img
+                                        src="${product.image_url}"
+                                        alt="${product.product_name}"
+                                      >`
+
+                                    : "🧺"
+                                }
+
+                            </div>
+
+
+                            <div class="product-info">
+
+                                <h3>
+                                    ${product.product_name}
+                                </h3>
+
+
+                                <p>
+                                    <strong>
+                                        Category:
+                                    </strong>
+
+                                    ${product.category}
+                                </p>
+
+
+                                <p>
+                                    ${product.description || ""}
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Price:
+                                    </strong>
+
+                                    ₱${Number(
+                                        product.price
+                                    ).toFixed(2)}
+                                </p>
+
+<a
+    href="edit-product.html?id=${product.id}"
+    class="register-btn"
+>
+    Edit Product
+</a>
+<button
+    class="delete-product-btn"
+    onclick="deleteProduct(${product.id})"
+>
+    Remove Product
+</button>
+                            </div>
+
+                        </div>
+
+                    `;
+
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Seller products error:",
+                    error
+                );
+
+
+                container.innerHTML = `
+
+                    <p>
+                        Something went wrong while
+                        loading your products.
+                    </p>
+
+                `;
+
+            }
+
+        }
+
+async function deleteProduct(productId) {
+
+    const confirmed = confirm(
+        "Are you sure you want to remove this product?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/api/seller-products/${productId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message);
+            return;
+        }
+
+        alert(result.message);
+
+        // Refresh the products after deleting
+        loadSellerProducts();
+
+    } catch (error) {
+
+        console.error(
+            "Delete product error:",
+            error
+        );
+
+        alert(
+            "Something went wrong while deleting the product."
+        );
+
+    }
+
+}
+
+
+
+        loadSellerProducts();
+
+    </script>
+
+
+</body>
+
+</html>

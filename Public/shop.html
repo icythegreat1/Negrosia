@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Shop | Negrosia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">NEGROSIA</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="index.html#categories">Categories</a>
+            <a href="index.html#about">About</a>
+        </div>
+
+        <div class="nav-actions">
+    <a href="login.html">Login</a>
+    <a href="register.html" class="register-btn">Register</a>
+    <a href="cart.html" class="cart">🛒</a>
+</div>
+
+    </nav>
+
+
+    <!-- SHOP HEADER -->
+    <section class="shop-header">
+
+        <h1>Shop Local Crafts</h1>
+
+        <p>
+            Discover unique handmade products from local craft sellers.
+        </p>
+
+    </section>
+
+
+    <!-- SEARCH AND FILTER -->
+    <section class="shop-tools">
+
+        <input 
+            type="text"
+            placeholder="Search for crafts..."
+        >
+
+        <select>
+            <option value="">All Categories</option>
+            <option value="woven">Woven Crafts</option>
+            <option value="jewelry">Jewelry & Accessories</option>
+            <option value="decor">Home Decor</option>
+            <option value="bags">Bags & Pouches</option>
+            <option value="gifts">Handmade Gifts</option>
+            <option value="souvenirs">Souvenirs</option>
+        </select>
+
+    </section>
+
+
+    <!-- PRODUCTS -->
+    <section class="shop-products">
+
+        <h2>Available Crafts</h2>
+
+       <div class="product-container" id="productContainer">
+    <!-- Products from PostgreSQL will appear here -->
+</div>
+
+    </section>
+<script>
+    async function loadProducts() {
+        try {
+            const response = await fetch("/api/products");
+            const products = await response.json();
+
+            const container = document.getElementById("productContainer");
+
+            if (products.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-products">
+                        <div class="empty-icon">🧺</div>
+                        <h3>No products available yet</h3>
+                        <p>Products added by local sellers will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = "";
+
+            products.forEach(product => {
+                container.innerHTML += `
+                    <div class="product-card">
+
+                        <div class="product-image">
+    ${
+        product.image_url
+            ? `<img src="${product.image_url}" alt="${product.product_name}">`
+            : "🧺 Product Image"
+    }
+</div>
+
+                        <div class="product-info">
+
+                            <h3>${product.product_name}</h3>
+
+                            <p class="seller">
+                                Seller: ${product.seller_name}
+                            </p>
+
+                            <p>${product.category}</p>
+
+                            <p>
+                                ${product.description || "No description available."}
+                            </p>
+
+                            <p class="price">
+                                ₱${Number(product.price).toFixed(2)}
+                            </p>
+
+                           <button onclick='addToCart(${JSON.stringify(product)})'>
+    Add to Cart
+</button>
+
+                        </div>
+
+                    </div>
+                `;
+            });
+
+        } catch (error) {
+            console.error("Error loading products:", error);
+        }
+    }
+function addToCart(product) {
+
+    // Get the existing cart
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // Check if the product is already in the cart
+    const existingProduct = cart.find(
+        item => item.id === product.id
+    );
+
+    if (existingProduct) {
+        existingProduct.quantity += 1;
+    } else {
+        cart.push({
+            id: product.id,
+            product_name: product.product_name,
+            price: product.price,
+            image_url: product.image_url,
+            seller_name: product.seller_name,
+            quantity: 1
+        });
+    }
+
+    // Save the cart
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    alert(product.product_name + " added to cart!");
+}
+    loadProducts();
+</script>
+</body>
+</html>

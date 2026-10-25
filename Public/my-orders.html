@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Orders | Negrosia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">NEGROSIA</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="my-orders.html">My Orders</a>
+        </div>
+
+        <div class="nav-actions">
+            <a href="cart.html" class="cart">🛒</a>
+        </div>
+
+    </nav>
+
+
+    <!-- HEADER -->
+    <section class="shop-header">
+
+        <h1>My Orders</h1>
+
+        <p>
+            View your Negrosia orders and their current status.
+        </p>
+
+    </section>
+
+
+    <!-- ORDERS -->
+    <section class="shop-products">
+
+        <div id="ordersContainer">
+
+            <p>Loading your orders...</p>
+
+        </div>
+
+    </section>
+
+
+    <script>
+
+        async function loadOrders() {
+
+            const container =
+                document.getElementById("ordersContainer");
+
+            try {
+
+                const response =
+                    await fetch("/api/my-orders");
+
+                const orders =
+                    await response.json();
+
+
+                // Not logged in
+                if (response.status === 401) {
+
+                    alert("Please login first.");
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+                }
+
+
+                // Other server error
+                if (!response.ok) {
+
+                    container.innerHTML =
+                        `<p>${orders.message}</p>`;
+
+                    return;
+                }
+
+
+                // No orders
+                if (orders.length === 0) {
+
+                    container.innerHTML = `
+                        <div class="empty-products">
+
+                            <div class="empty-icon">
+                                📦
+                            </div>
+
+                            <h3>
+                                No orders yet
+                            </h3>
+
+                            <p>
+                                Your orders will appear here
+                                after you make a purchase.
+                            </p>
+
+                            <a href="shop.html">
+                                Start Shopping
+                            </a>
+
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                container.innerHTML = "";
+
+
+               orders.forEach(order => {
+
+    const orderDate =
+        new Date(
+            order.created_at
+        ).toLocaleString();
+
+
+    // Create HTML for products
+    let itemsHTML = "";
+
+
+    order.items.forEach(item => {
+
+        const subtotal =
+            Number(item.price) *
+            item.quantity;
+
+
+        itemsHTML += `
+
+            <div class="order-item">
+
+                <div class="product-image">
+
+                    ${
+                        item.image_url
+
+                        ? `<img
+                            src="${item.image_url}"
+                            alt="${item.product_name}"
+                          >`
+
+                        : "🧺"
+                    }
+
+                </div>
+
+
+                <div class="product-info">
+
+                    <h3>
+                        ${item.product_name}
+                    </h3>
+
+                    <p>
+                        Quantity:
+                        ${item.quantity}
+                    </p>
+
+                    <p>
+                        Price:
+                        ₱${Number(
+                            item.price
+                        ).toFixed(2)}
+                    </p>
+
+                    <p>
+                        Subtotal:
+                        ₱${subtotal.toFixed(2)}
+                    </p>
+
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+
+    // Display complete order
+    container.innerHTML += `
+
+        <div class="order-card">
+
+            <h2>
+                Order #${order.id}
+            </h2>
+
+
+            <p>
+                <strong>Status:</strong>
+                ${order.status}
+            </p>
+
+
+            <hr>
+
+
+            <h3>
+                Products
+            </h3>
+
+
+            ${itemsHTML}
+
+
+            <hr>
+
+
+            <p>
+                <strong>Total:</strong>
+                ₱${Number(
+                    order.total_amount
+                ).toFixed(2)}
+            </p>
+
+
+            <p>
+                <strong>Payment:</strong>
+                ${order.payment_method}
+            </p>
+
+
+            <p>
+                <strong>Delivery Address:</strong>
+                ${order.delivery_address}
+            </p>
+
+
+            <p>
+                <strong>Date:</strong>
+                ${orderDate}
+            </p>
+
+        </div>
+
+    `;
+
+});
+
+
+            } catch (error) {
+
+                console.error(
+                    "Order loading error:",
+                    error
+                );
+
+                container.innerHTML = `
+                    <p>
+                        Something went wrong while
+                        loading your orders.
+                    </p>
+                `;
+
+            }
+
+        }
+
+
+        loadOrders();
+
+    </script>
+
+</body>
+
+</html>

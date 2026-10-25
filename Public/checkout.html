@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Checkout | Negrosia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">NEGROSIA</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="cart.html">Cart</a>
+        </div>
+
+    </nav>
+
+
+    <!-- CHECKOUT SECTION -->
+    <section class="register-section">
+
+        <div class="register-box">
+
+            <h1>Checkout</h1>
+
+            <p>
+                Enter your delivery information.
+            </p>
+
+
+            <form id="checkoutForm">
+
+                <!-- FULL NAME -->
+                <label for="fullName">
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+
+                <!-- PHONE -->
+                <label for="phone">
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    required
+                >
+
+
+                <!-- ADDRESS -->
+                <label for="address">
+                    Delivery Address
+                </label>
+
+                <textarea
+                    id="address"
+                    name="address"
+                    placeholder="Enter your complete delivery address"
+                    rows="4"
+                    required
+                ></textarea>
+
+
+                <!-- PAYMENT -->
+                <label for="paymentMethod">
+                    Payment Method
+                </label>
+
+                <select
+                    id="paymentMethod"
+                    name="paymentMethod"
+                    required
+                >
+
+                    <option value="">
+                        Select payment method
+                    </option>
+
+                    <option value="COD">
+                        Cash on Delivery
+                    </option>
+
+                </select>
+
+
+                <!-- TOTAL -->
+                <div class="checkout-total">
+
+                    <h2>
+                        Total:
+                        ₱<span id="checkoutTotal">0.00</span>
+                    </h2>
+
+                </div>
+
+
+                <!-- PLACE ORDER -->
+                <button
+                    type="submit"
+                    id="placeOrderButton"
+                >
+                    Place Order
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <script>
+
+        // ==========================
+        // LOAD CHECKOUT TOTAL
+        // ==========================
+
+        function loadCheckoutTotal() {
+
+            const cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+            let total = 0;
+
+
+            cart.forEach(product => {
+
+                total +=
+                    Number(product.price) *
+                    product.quantity;
+
+            });
+
+
+            document.getElementById(
+                "checkoutTotal"
+            ).textContent = total.toFixed(2);
+
+        }
+
+
+
+        // ==========================
+        // PLACE ORDER
+        // ==========================
+
+        document.getElementById(
+            "checkoutForm"
+        ).addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+
+                // Get cart
+                const cart =
+                    JSON.parse(
+                        localStorage.getItem("cart")
+                    ) || [];
+
+
+                // Check cart
+                if (cart.length === 0) {
+
+                    alert("Your cart is empty.");
+
+                    window.location.href =
+                        "shop.html";
+
+                    return;
+
+                }
+
+
+                // Get checkout information
+                const fullName =
+                    document.getElementById(
+                        "fullName"
+                    ).value;
+
+                const phone =
+                    document.getElementById(
+                        "phone"
+                    ).value;
+
+                const address =
+                    document.getElementById(
+                        "address"
+                    ).value;
+
+                const paymentMethod =
+                    document.getElementById(
+                        "paymentMethod"
+                    ).value;
+
+
+                const button =
+                    document.getElementById(
+                        "placeOrderButton"
+                    );
+
+
+                try {
+
+                    button.disabled = true;
+                    button.textContent =
+                        "Placing Order...";
+
+
+                    // Send order to server
+                    const response =
+                        await fetch("/api/orders", {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                fullName:
+                                    fullName,
+
+                                phone:
+                                    phone,
+
+                                address:
+                                    address,
+
+                                paymentMethod:
+                                    paymentMethod,
+
+                                cart:
+                                    cart
+
+                            })
+
+                        });
+
+
+                    const result =
+                        await response.json();
+
+
+                    // Check for server error
+                    if (!response.ok) {
+
+                        alert(result.message);
+
+                        button.disabled = false;
+                        button.textContent =
+                            "Place Order";
+
+                        return;
+
+                    }
+
+
+                    // Order successful
+                    alert(
+                        "Order placed successfully! Order #" +
+                        result.orderId
+                    );
+
+
+                    // Clear cart
+                    localStorage.removeItem(
+                        "cart"
+                    );
+
+
+                    // Return to shop
+                    window.location.href =
+                        "shop.html";
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Checkout error:",
+                        error
+                    );
+
+
+                    alert(
+                        "Something went wrong while placing your order."
+                    );
+
+
+                    button.disabled = false;
+                    button.textContent =
+                        "Place Order";
+
+                }
+
+            }
+        );
+
+
+        // Load total when page opens
+        loadCheckoutTotal();
+
+    </script>
+
+</body>
+
+</html>

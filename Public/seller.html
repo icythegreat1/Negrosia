@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Seller Dashboard | Negrosia</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            NEGROSIA
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="seller.html">
+                Dashboard
+            </a>
+
+            <a href="add-product.html">
+                Add Product
+            </a>
+
+            <a href="seller-products.html">
+                My Products
+            </a>
+
+            <a href="seller-orders.html">
+                Orders
+            </a>
+
+        </div>
+
+        <div class="nav-actions">
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- DASHBOARD HEADER -->
+
+    <section class="shop-header">
+
+        <h1>
+            Seller Dashboard
+        </h1>
+
+        <p>
+            Manage your Negrosia products and customer orders.
+        </p>
+
+    </section>
+
+
+    <!-- SELLER STATISTICS -->
+
+    <section class="shop-products">
+
+        <div class="seller-stats">
+
+
+            <!-- ACTIVE PRODUCTS -->
+
+            <div class="stat-card">
+
+                <h3 id="activeProducts">
+                    0
+                </h3>
+
+                <p>
+                    Active Products
+                </p>
+
+            </div>
+
+
+            <!-- ORDERS RECEIVED -->
+
+            <div class="stat-card">
+
+                <h3 id="totalOrders">
+                    0
+                </h3>
+
+                <p>
+                    Orders Received
+                </p>
+
+            </div>
+
+
+            <!-- PENDING ORDERS -->
+
+            <div class="stat-card">
+
+                <h3 id="pendingOrders">
+                    0
+                </h3>
+
+                <p>
+                    Pending Orders
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- DASHBOARD OPTIONS -->
+
+    <section class="shop-products">
+
+        <div class="dashboard-grid">
+
+
+            <!-- ADD PRODUCT -->
+
+            <div class="order-card">
+
+                <h2>
+                    ➕ Add Product
+                </h2>
+
+                <p>
+                    Add a new handmade product
+                    to the Negrosia marketplace.
+                </p>
+
+                <a
+                    href="add-product.html"
+                    class="register-btn"
+                >
+                    Add Product
+                </a>
+
+            </div>
+
+
+            <!-- MY PRODUCTS -->
+
+            <div class="order-card">
+
+                <h2>
+                    🧺 My Products
+                </h2>
+
+                <p>
+                    View and manage the handmade
+                    products you are selling.
+                </p>
+
+                <a
+                    href="seller-products.html"
+                    class="register-btn"
+                >
+                    View Products
+                </a>
+
+            </div>
+
+
+            <!-- CUSTOMER ORDERS -->
+
+            <div class="order-card">
+
+                <h2>
+                    📦 Customer Orders
+                </h2>
+
+                <p>
+                    View customer orders and
+                    update their order status.
+                </p>
+
+                <a
+                    href="seller-orders.html"
+                    class="register-btn"
+                >
+                    View Orders
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- DASHBOARD SCRIPT -->
+
+    <script>
+
+        async function loadDashboard() {
+
+            try {
+
+                const response =
+                    await fetch("/api/seller-dashboard");
+
+
+                // User is not logged in
+                if (response.status === 401) {
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+
+                }
+
+
+                // User is not a seller
+                if (response.status === 403) {
+
+                    alert(
+                        "Seller access only."
+                    );
+
+                    window.location.href =
+                        "index.html";
+
+                    return;
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                // Check for server error
+                if (!response.ok) {
+
+                    console.error(
+                        data.message
+                    );
+
+                    return;
+
+                }
+
+
+                // Display active products
+                document.getElementById(
+                    "activeProducts"
+                ).textContent =
+                    data.activeProducts;
+
+
+                // Display total orders
+                document.getElementById(
+                    "totalOrders"
+                ).textContent =
+                    data.totalOrders;
+
+
+                // Display pending orders
+                document.getElementById(
+                    "pendingOrders"
+                ).textContent =
+                    data.pendingOrders;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Dashboard error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // Load dashboard information
+        loadDashboard();
+
+    </script>
+
+
+</body>
+
+</html>

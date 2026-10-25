@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | Negrosia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="logo">NEGROSIA</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="index.html#categories">Categories</a>
+            <a href="index.html#about">About</a>
+        </div>
+
+        <div class="nav-actions">
+            <a href="login.html">Login</a>
+            <a href="register.html" class="register-btn">Register</a>
+            <a href="#" class="cart">🛒</a>
+        </div>
+
+    </nav>
+
+
+    <!-- REGISTER -->
+    <section class="register-section">
+
+        <div class="register-box">
+
+            <h1>Create an Account</h1>
+
+            <p>
+                Join Negrosia as a customer or local craft seller.
+            </p>
+
+            
+
+               <form action="/register" method="POST">
+
+    <label for="fullname">Full Name</label>
+    <input
+        type="text"
+        id="fullname"
+        name="fullName"
+        placeholder="Enter your full name"
+        required
+    >
+
+    <label for="email">Email Address</label>
+    <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Enter your email"
+        required
+    >
+
+    <label for="accountType">Account Type</label>
+    <select id="accountType" name="accountType" required>
+        <option value="">Select account type</option>
+        <option value="customer">Customer</option>
+        <option value="seller">Seller</option>
+    </select>
+
+    <label for="password">Password</label>
+    <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Create a password"
+        required
+    >
+
+    <label for="confirmPassword">Confirm Password</label>
+    <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        placeholder="Confirm your password"
+        required
+    >
+
+    <button type="submit">Create Account</button>
+
+
+            </form>
+
+
+            <p class="account-text">
+                Already have an account?
+                <a href="login.html">Login here</a>
+            </p>
+
+        </div>
+
+    </section>
+
+</body>
+</html>
